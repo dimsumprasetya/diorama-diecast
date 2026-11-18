@@ -15,7 +15,8 @@
     "start": "tsx server/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test test/pricing.test.ts test/server.test.ts",
-    "build:preview": "VITE_PREVIEW=1 vite build --base ./ --outDir dist-preview && node scripts/preview-page.mjs"
+    "build:preview": "VITE_PREVIEW=1 VITE_EMBED=1 vite build --base ./ --outDir dist-preview && node scripts/preview-page.mjs",
+    "build:pages": "VITE_PREVIEW=1 vite build --base ./ --outDir dist-pages"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

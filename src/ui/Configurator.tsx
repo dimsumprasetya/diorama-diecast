@@ -5,7 +5,7 @@ import { formatRupiah, quoteDesign } from '../../shared/pricing.ts';
 import { ROT_STEP, hitSurface } from '../lib/placement.ts';
 import { Stage, stageRay } from '../scene/Stage.tsx';
 import { useStore } from '../store.ts';
-import { IS_PREVIEW } from '../preview.ts';
+import { IS_EMBED, IS_PREVIEW } from '../preview.ts';
 import { Checkout } from './Checkout.tsx';
 import { Icon } from './Icon.tsx';
 import { AssetsStep, ExtrasStep, PanelsStep, ThemeStep } from './steps.tsx';
@@ -81,7 +81,7 @@ function TopBar({ total }: { total: number }) {
   const canRedo = useStore((s) => s.future.length > 0);
   const share = async () => {
     const st = useStore.getState();
-    const url = `${location.origin}/#d=${encodeDesign(st.design)}`;
+    const url = `${location.origin}${location.pathname}#d=${encodeDesign(st.design)}`;
     try {
       await navigator.clipboard.writeText(url);
       st.notify('Link desain disalin — kirim ke teman!');
@@ -92,7 +92,7 @@ function TopBar({ total }: { total: number }) {
   };
   return (
     <header className="topbar">
-      <a className="brand" href="/" aria-label={SHOP.name}>
+      <a className="brand" href="./" aria-label={SHOP.name}>
         <span className="brand-mark">H</span>
         <span className="brand-text">
           <b>{SHOP.name.toUpperCase()}</b>
@@ -106,7 +106,7 @@ function TopBar({ total }: { total: number }) {
         <button className="icon-btn" title="Redo (Ctrl+Shift+Z)" disabled={!canRedo} onClick={() => useStore.getState().redo()}>
           <Icon name="redo" />
         </button>
-        {!IS_PREVIEW && (
+        {!IS_EMBED && (
           <button className="icon-btn" title="Bagikan link desain" onClick={share}>
             <Icon name="link" />
           </button>

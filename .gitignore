@@ -4,3 +4,4 @@ data
 .env
 *.log
 dist-preview
+dist-pages
