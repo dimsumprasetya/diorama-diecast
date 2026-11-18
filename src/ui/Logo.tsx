@@ -25,7 +25,7 @@ export function LogoMark({ size = 32, title }: { size?: number; title?: string }
   return (
     <svg width={size} height={(size * 70) / 60} viewBox="0 0 60 70" role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
       <path d="M0 0H22V70H0Z M38 0H60V70H38Z M22 22H38V48H22Z" fill="currentColor" />
-      <path d="M-0.5 57.8 L22.5 20.2" stroke="var(--logo-cut, #fff)" strokeWidth={2.6} />
+      <path d="M4.7 45.3 L17.3 24.7" stroke="var(--logo-cut, #fff)" strokeWidth={2.6} />
       <Ruler />
     </svg>
   );
@@ -38,7 +38,7 @@ export function LogoBadge({ size = 160 }: { size?: number }) {
       <circle cx={100} cy={100} r={95} fill="#fff" stroke="#0b0b0b" strokeWidth={7} />
       <g transform="translate(73 26) scale(0.9)">
         <path d="M0 0H22V70H0Z M38 0H60V70H38Z M22 22H38V48H22Z" fill="#0b0b0b" />
-        <path d="M-0.5 57.8 L22.5 20.2" stroke="#fff" strokeWidth={2.6} />
+        <path d="M4.7 45.3 L17.3 24.7" stroke="#fff" strokeWidth={2.6} />
         <Ruler />
       </g>
       <text x={100} y={122} textAnchor="middle" fontFamily="Montserrat, 'Arial Black', sans-serif" fontWeight={900} fontSize={29} letterSpacing={-0.5} fill="#0b0b0b">
