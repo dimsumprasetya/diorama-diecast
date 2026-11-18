@@ -1,0 +1,42 @@
+{
+  "name": "diorama-diecast",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Configurator diorama diecast 3D untuk H-Scale Studio",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c yellow,cyan \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:web": "vite",
+    "dev:api": "tsx watch server/index.ts",
+    "build": "tsc --noEmit && vite build",
+    "start": "tsx server/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/pricing.test.ts test/server.test.ts",
+    "build:preview": "VITE_PREVIEW=1 VITE_EMBED=1 vite build --base ./ --outDir dist-preview && node scripts/preview-page.mjs",
+    "build:pages": "VITE_PREVIEW=1 vite build --base ./ --outDir dist-pages"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
+    "express": "^4.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.170.0",
+    "tsx": "^4.19.2",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.7",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@types/three": "^0.170.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11"
+  }
+}
