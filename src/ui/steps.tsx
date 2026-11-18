@@ -17,9 +17,11 @@ function ThemeCard({ id, name, desc, active }: { id: string; name: string; desc:
   const img = useThemePreview(id);
   const choose = () => {
     const st = useStore.getState();
-    if (st.past.length > 2 && st.design.theme !== id && !confirm(`Ganti ke tema "${name}"? Desain sekarang akan diganti (bisa di-undo).`)) return;
+    if (st.design.theme === id) return;
+    const hadEdits = st.past.length > 0;
     st.loadTheme(id);
     st.camera('reset');
+    if (hadEdits) st.notify(`Tema diganti ke ${name}. Tekan Undo untuk kembali.`);
   };
   return (
     <button className={`theme-card ${active ? 'on' : ''}`} onClick={choose}>

@@ -5,6 +5,7 @@ import { formatRupiah, quoteDesign } from '../../shared/pricing.ts';
 import { ROT_STEP, hitSurface } from '../lib/placement.ts';
 import { Stage, stageRay } from '../scene/Stage.tsx';
 import { useStore } from '../store.ts';
+import { IS_PREVIEW } from '../preview.ts';
 import { Checkout } from './Checkout.tsx';
 import { Icon } from './Icon.tsx';
 import { AssetsStep, ExtrasStep, PanelsStep, ThemeStep } from './steps.tsx';
@@ -86,7 +87,8 @@ function TopBar({ total }: { total: number }) {
       await navigator.clipboard.writeText(url);
       st.notify(Object.keys(st.uploads).length ? 'Link disalin (gambar upload tidak ikut di link)' : 'Link desain disalin — kirim ke teman!');
     } catch {
-      prompt('Salin link desain ini:', url);
+      st.notify('Browser menolak menyalin link. Salin dari address bar setelah membuka ulang halaman.');
+      history.replaceState(null, '', `#d=${encodeDesign(st.design)}`);
     }
   };
   return (
@@ -105,10 +107,13 @@ function TopBar({ total }: { total: number }) {
         <button className="icon-btn" title="Redo (Ctrl+Shift+Z)" disabled={!canRedo} onClick={() => useStore.getState().redo()}>
           <Icon name="redo" />
         </button>
-        <button className="icon-btn" title="Bagikan link desain" onClick={share}>
-          <Icon name="link" />
-        </button>
+        {!IS_PREVIEW && (
+          <button className="icon-btn" title="Bagikan link desain" onClick={share}>
+            <Icon name="link" />
+          </button>
+        )}
       </div>
+      {IS_PREVIEW && <span className="preview-chip" title="Versi preview: pemesanan belum aktif">PREVIEW</span>}
       <div className="price-chip" title="Harga diorama (belum termasuk ongkir)">
         <small>TOTAL</small>
         <PriceTicker value={total} />

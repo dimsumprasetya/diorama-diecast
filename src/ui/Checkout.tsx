@@ -4,6 +4,7 @@ import { uploadPanels } from '../../shared/design.ts';
 import { formatRupiah, quoteDesign } from '../../shared/pricing.ts';
 import { api, type AppConfig } from '../lib/api.ts';
 import { navigate } from '../router.ts';
+import { IS_PREVIEW } from '../preview.ts';
 import { useStore } from '../store.ts';
 import { renderDioramaPhoto } from '../three/offscreen.ts';
 import { Icon } from './Icon.tsx';
@@ -35,6 +36,7 @@ export function Checkout() {
   const missingUploads = uploadPanels(design).filter((p) => !uploads[p]);
 
   useEffect(() => {
+    if (IS_PREVIEW) return setConfig({ paymentMode: 'manual', midtrans: null });
     api<AppConfig>('/config').then(setConfig).catch(() => setConfig({ paymentMode: 'manual', midtrans: null }));
   }, []);
 
@@ -52,6 +54,7 @@ export function Checkout() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (IS_PREVIEW) return;
     if (missingUploads.length) return setError('Masih ada panel "Gambar Sendiri" yang belum diupload gambarnya.');
     if (!approved) return setError('Centang persetujuan desain terlebih dahulu.');
     setBusy(true);
@@ -194,7 +197,8 @@ export function Checkout() {
 
       {error && <div className="alert error">{error}</div>}
 
-      <button className="btn primary big" type="submit" disabled={busy || missingUploads.length > 0}>
+      {IS_PREVIEW && <div className="alert warn">Ini versi preview. Pemesanan & pembayaran aktif setelah website di-hosting.</div>}
+      <button className="btn primary big" type="submit" disabled={IS_PREVIEW || busy || missingUploads.length > 0}>
         {busy ? 'Memproses…' : (
           <>
             <Icon name="check" /> Setuju & {method === 'tokopedia' ? 'Buat Kode Desain' : `Bayar ${formatRupiah(quote.total)}`}
