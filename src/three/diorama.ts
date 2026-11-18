@@ -4,11 +4,9 @@ import type { Design, PlacedItem, WallSide } from '../../shared/design.ts';
 import { buildCar, buildItem } from './builders.ts';
 import { buildDecal } from './decals.ts';
 import { mat } from './materials.ts';
-import { getTexSet, textTexture, texturesFor } from './textures.ts';
+import { textTexture, texturesFor } from './textures.ts';
 
 /** Semua satuan 3D = meter dunia nyata (skala 1:64 → 1 m = 1,5625 cm). */
-
-export type Uploads = Partial<Record<PanelId, string>>;
 
 export type Dims = {
   w: number;
@@ -71,68 +69,26 @@ export function buildPlaced(item: PlacedItem): THREE.Group {
 
 // ---------------------------------------------------------------- panel print
 
-const uploadCache = new Map<string, THREE.Texture>();
-
-/** Tekstur dari gambar upload, dipotong (cover) sesuai rasio panel. */
-export function uploadTexture(url: string, aspect: number, onLoad?: () => void): THREE.Texture {
-  const key = `${aspect.toFixed(3)}|${url.length}|${url.slice(-64)}`;
-  let t = uploadCache.get(key);
-  if (t) return t;
-  const tex = new THREE.Texture();
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
-  const img = new Image();
-  img.onload = () => {
-    tex.image = img;
-    const ia = img.width / img.height;
-    if (ia > aspect) {
-      tex.repeat.set(aspect / ia, 1);
-      tex.offset.set((1 - aspect / ia) / 2, 0);
-    } else {
-      tex.repeat.set(1, ia / aspect);
-      tex.offset.set(0, (1 - ia / aspect) / 2);
-    }
-    tex.needsUpdate = true;
-    onLoad?.();
-  };
-  img.src = url;
-  uploadCache.set(key, tex);
-  return tex;
-}
-
-export function waitForUploads(): Promise<void> {
-  const pending = [...uploadCache.values()].filter((t) => !t.image);
-  return Promise.all(pending.map((t) => new Promise<void>((res) => {
-    const check = () => (t.image ? res() : setTimeout(check, 30));
-    check();
-  }))).then(() => undefined);
-}
-
 const ROUGH: Record<string, number> = { 'asphalt-wet': 0.22, epoxy: 0.32, tiles: 0.35, 'tile-wall': 0.3 };
 
 const panelMatCache = new Map<string, THREE.MeshStandardMaterial>();
 
 /** Material print panel; null = bening (tanpa print). */
-export function panelMaterial(panel: PanelId, spec: { bg: string; color?: string }, w: number, h: number, upload?: string): THREE.MeshStandardMaterial | null {
+export function panelMaterial(panel: PanelId, spec: { bg: string; color?: string }, w: number, h: number): THREE.MeshStandardMaterial | null {
   const list = panel === 'floor' ? FLOOR_BACKGROUNDS : WALL_BACKGROUNDS;
   const bg = byId(list, spec.bg) ?? list[0];
   if (bg.id === 'clear') return null;
-  const key = `${panel}|${bg.id}|${spec.color ?? ''}|${w.toFixed(3)}|${h.toFixed(3)}|${bg.id === 'upload' ? (upload?.length ?? 0) + (upload?.slice(-48) ?? '') : ''}`;
+  const key = `${panel}|${bg.id}|${spec.color ?? ''}|${w.toFixed(3)}|${h.toFixed(3)}`;
   let m = panelMatCache.get(key);
   if (m) return m;
-  if (bg.id === 'upload') {
-    const map = upload ? uploadTexture(upload, w / h) : getTexSet('placeholder').map;
-    m = new THREE.MeshStandardMaterial({ map, roughness: 0.75 });
-  } else {
-    const t = texturesFor(bg.id, w, h);
-    m = new THREE.MeshStandardMaterial({
-      map: t.map,
-      ...(t.bump ? { bumpMap: t.bump, bumpScale: 1.2 } : {}),
-      color: bg.colorable ? spec.color ?? '#ffffff' : '#ffffff',
-      roughness: ROUGH[bg.id] ?? 0.85,
-      metalness: bg.id === 'asphalt-wet' ? 0.15 : 0,
-    });
-  }
+  const t = texturesFor(bg.id, w, h);
+  m = new THREE.MeshStandardMaterial({
+    map: t.map,
+    ...(t.bump ? { bumpMap: t.bump, bumpScale: 1.2 } : {}),
+    color: bg.colorable ? spec.color ?? '#ffffff' : '#ffffff',
+    roughness: ROUGH[bg.id] ?? 0.85,
+    metalness: bg.id === 'asphalt-wet' ? 0.15 : 0,
+  });
   panelMatCache.set(key, m);
   return m;
 }
@@ -158,7 +114,7 @@ export type Shell = {
   ledStrip: THREE.Object3D | null;
 };
 
-export function buildShell(design: Design, uploads: Uploads = {}): Shell {
+export function buildShell(design: Design): Shell {
   const D = dims(design);
   const g = new THREE.Group();
 
@@ -179,14 +135,19 @@ export function buildShell(design: Design, uploads: Uploads = {}): Shell {
 
   // tulisan di base
   if (design.options.baseText.trim()) {
-    const tex = textTexture(design.options.baseText.trim(), { color: '#f2f2ee', width: 1024, height: 96, font: '"Chakra Petch", sans-serif' });
-    const plate = new THREE.Mesh(new THREE.PlaneGeometry(bw * 0.7, D.baseThick * 0.62), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+    // rasio gambar teks = rasio bidang tulisan, supaya huruf tidak melebar/gepeng
+    const planeW = bw * 0.8;
+    const planeH = D.baseThick * 0.7;
+    const texH = 96;
+    const texW = Math.min(4096, Math.round((texH * planeW) / planeH));
+    const tex = textTexture(design.options.baseText.trim(), { color: '#f2f2ee', width: texW, height: texH, font: '"Chakra Petch", sans-serif' });
+    const plate = new THREE.Mesh(new THREE.PlaneGeometry(planeW, planeH), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
     plate.position.set(0, -D.baseThick / 2, cz + bd / 2 + 0.002);
     g.add(plate);
   }
 
   // lantai
-  const floorMat = panelMaterial('floor', design.panels.floor, D.w, D.d, uploads.floor) ?? mat('#111', 0.5);
+  const floorMat = panelMaterial('floor', design.panels.floor, D.w, D.d) ?? mat('#111', 0.5);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(D.w, D.d), floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = 0.002;
@@ -209,7 +170,7 @@ export function buildShell(design: Design, uploads: Uploads = {}): Shell {
     const wg = new THREE.Group();
     wg.position.copy(f.origin);
     wg.rotation.y = f.rotY;
-    const m = panelMaterial(side, design.panels[side], f.length, D.h, uploads[side]);
+    const m = panelMaterial(side, design.panels[side], f.length, D.h);
     let surface: THREE.Mesh;
     if (m) {
       const side_ = sideMat();
@@ -271,9 +232,9 @@ export function buildShell(design: Design, uploads: Uploads = {}): Shell {
 }
 
 /** Diorama lengkap tanpa interaksi (untuk thumbnail tema & gambar pesanan). */
-export function buildStatic(design: Design, uploads: Uploads = {}, opts: { cars?: boolean; showCase?: boolean } = {}): THREE.Group {
+export function buildStatic(design: Design, opts: { cars?: boolean; showCase?: boolean } = {}): THREE.Group {
   const D = dims(design);
-  const shell = buildShell(design, uploads);
+  const shell = buildShell(design);
   shell.caseGroup.visible = opts.showCase ?? true;
   const g = shell.group;
   design.items.forEach((it, i) => {

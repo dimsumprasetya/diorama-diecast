@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { PANELS, SHIPPING_ZONES, SHOP } from '../../shared/catalog.ts';
-import { uploadPanels } from '../../shared/design.ts';
+import { SHIPPING_ZONES, SHOP } from '../../shared/catalog.ts';
 import { formatRupiah, quoteDesign } from '../../shared/pricing.ts';
 import { api, type AppConfig } from '../lib/api.ts';
 import { navigate } from '../router.ts';
@@ -16,7 +15,6 @@ type Customer = { name: string; phone: string; email: string; address: string; c
 
 export function Checkout() {
   const design = useStore((s) => s.design);
-  const uploads = useStore((s) => s.uploads);
   const [zone, setZone] = useState('jawa');
   const quote = useMemo(() => quoteDesign(design, zone), [design, zone]);
   const [photo, setPhoto] = useState<string | null>(null);
@@ -33,8 +31,6 @@ export function Checkout() {
     }
   });
 
-  const missingUploads = uploadPanels(design).filter((p) => !uploads[p]);
-
   useEffect(() => {
     if (IS_PREVIEW) return setConfig({ paymentMode: 'manual', midtrans: null });
     api<AppConfig>('/config').then(setConfig).catch(() => setConfig({ paymentMode: 'manual', midtrans: null }));
@@ -43,11 +39,11 @@ export function Checkout() {
   useEffect(() => {
     let alive = true;
     setPhoto(null);
-    renderDioramaPhoto(design, uploads, { width: 960, height: 600 }).then((u) => alive && setPhoto(u));
+    renderDioramaPhoto(design, { width: 960, height: 600 }).then((u) => alive && setPhoto(u));
     return () => {
       alive = false;
     };
-  }, [design, uploads]);
+  }, [design]);
 
   const set = (k: keyof Customer) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setC({ ...c, [k]: e.target.value });
 
@@ -55,17 +51,16 @@ export function Checkout() {
     e.preventDefault();
     setError('');
     if (IS_PREVIEW) return;
-    if (missingUploads.length) return setError('Masih ada panel "Gambar Sendiri" yang belum diupload gambarnya.');
     if (!approved) return setError('Centang persetujuan desain terlebih dahulu.');
     setBusy(true);
     try {
       localStorage.setItem(LS_CUSTOMER, JSON.stringify({ ...c, note: '' }));
       const [hero, front] = await Promise.all([
-        renderDioramaPhoto(design, uploads, { width: 1400, height: 900, cars: true }),
-        renderDioramaPhoto(design, uploads, { width: 1400, height: 800, cars: false, view: 'front' }),
+        renderDioramaPhoto(design, { width: 1400, height: 900, cars: true }),
+        renderDioramaPhoto(design, { width: 1400, height: 800, cars: false, view: 'front' }),
       ]);
       const res = await api<{ order: { id: string; paymentUrl: string | null }; accessKey: string; paymentError: string | null }>('/orders', {
-        body: { design, customer: c, shippingZone: zone, approved, paymentMethod: method, snapshots: { hero, top: front }, uploads },
+        body: { design, customer: c, shippingZone: zone, approved, paymentMethod: method, snapshots: { hero, top: front } },
       });
       const link = `/pesanan/${res.order.id}?k=${res.accessKey}`;
       try {
@@ -87,14 +82,6 @@ export function Checkout() {
     <form className="checkout" onSubmit={submit}>
       <div className="snapshot">{photo ? <img src={photo} alt="Preview diorama" /> : <span className="shimmer" />}</div>
 
-      {missingUploads.length > 0 && (
-        <div className="alert warn">
-          Panel {missingUploads.map((p) => PANELS.find((x) => x.id === p)?.label).join(', ')} memakai "Gambar Sendiri" tapi belum ada gambar.{' '}
-          <button type="button" className="link-btn" onClick={() => useStore.getState().setStep(1)}>
-            Upload sekarang
-          </button>
-        </div>
-      )}
 
       <div className="summary">
         {quote.lines.map((l) => (
@@ -198,7 +185,7 @@ export function Checkout() {
       {error && <div className="alert error">{error}</div>}
 
       {IS_PREVIEW && <div className="alert warn">Ini versi preview. Pemesanan & pembayaran aktif setelah website di-hosting.</div>}
-      <button className="btn primary big" type="submit" disabled={IS_PREVIEW || busy || missingUploads.length > 0}>
+      <button className="btn primary big" type="submit" disabled={IS_PREVIEW || busy}>
         {busy ? 'Memproses…' : (
           <>
             <Icon name="check" /> Setuju & {method === 'tokopedia' ? 'Buat Kode Desain' : `Bayar ${formatRupiah(quote.total)}`}

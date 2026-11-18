@@ -1,11 +1,10 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   BOX_SIZES, CATEGORIES, FLOOR_BACKGROUNDS, ITEMS, OPTIONS, PAINT_COLORS, PANELS, WALL_BACKGROUNDS,
   byId, enabledSizes, type ItemCategory, type ItemDef, type PanelId,
 } from '../../shared/catalog.ts';
 import { THEMES } from '../../shared/themes.ts';
 import { formatRupiah } from '../../shared/pricing.ts';
-import { resizeImage } from '../lib/image.ts';
 import { useStore, type CameraView } from '../store.ts';
 import { CarInspector } from './Configurator.tsx';
 import { Icon } from './Icon.tsx';
@@ -85,12 +84,9 @@ export function PanelsStep() {
   const [panel, setPanel] = useState<PanelId>('back');
   const spec = useStore((s) => s.design.panels[panel]);
   const grime = useStore((s) => s.design.grime);
-  const upload = useStore((s) => s.uploads[panel]);
   const st = useStore.getState();
   const list = panel === 'floor' ? FLOOR_BACKGROUNDS : WALL_BACKGROUNDS;
   const bg = byId(list, spec.bg);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
 
   const choosePanel = (p: PanelId) => {
     setPanel(p);
@@ -101,20 +97,6 @@ export function PanelsStep() {
       const def = byId(list, id)!;
       d.panels[panel] = def.colorable ? { bg: id, color: d.panels[panel].color ?? PAINT_COLORS[0] } : { bg: id };
     });
-  const onFile = async (f: File | undefined) => {
-    if (!f) return;
-    setBusy(true);
-    try {
-      st.setUpload(panel, await resizeImage(f));
-      if (spec.bg !== 'upload') setBg('upload');
-    } catch (e) {
-      st.notify((e as Error).message);
-    } finally {
-      setBusy(false);
-      if (fileRef.current) fileRef.current.value = '';
-    }
-  };
-  const aspect = panel === 'back' || panel === 'floor' ? '2:1 (melebar)' : '1:1 (kotak)';
 
   return (
     <>
@@ -129,11 +111,9 @@ export function PanelsStep() {
 
       <div className="bg-grid">
         {list.map((b) => (
-          <button key={b.id} className={`bg-opt ${spec.bg === b.id ? 'on' : ''}`} onClick={() => (b.id === 'upload' && !upload ? fileRef.current?.click() : setBg(b.id))}>
+          <button key={b.id} className={`bg-opt ${spec.bg === b.id ? 'on' : ''}`} onClick={() => setBg(b.id)}>
             <span className="bg-img">
-              {b.id === 'upload' ? (
-                upload ? <img src={upload} alt="" /> : <Icon name="upload" size={22} />
-              ) : b.id === 'clear' ? (
+              {b.id === 'clear' ? (
                 <span className="checker" />
               ) : (
                 <img src={bgSwatch(b.id, b.colorable ? (spec.bg === b.id ? spec.color : PAINT_COLORS[0]) : undefined)} alt="" />
@@ -144,7 +124,6 @@ export function PanelsStep() {
           </button>
         ))}
       </div>
-      <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
 
       {bg?.colorable && (
         <div className="field">
@@ -157,26 +136,6 @@ export function PanelsStep() {
         </div>
       )}
 
-      {spec.bg === 'upload' && (
-        <div className="upload-box">
-          {upload ? <img src={upload} alt="Gambar upload" /> : <div className="upload-empty">Belum ada gambar</div>}
-          <div>
-            <p className="muted small">
-              Rasio panel ini {aspect}. Gambar akan dipotong otomatis di bagian tengah. Gunakan gambar minimal 1200 px agar hasil cetak tajam.
-            </p>
-            <div className="row">
-              <button className="btn sm primary" onClick={() => fileRef.current?.click()} disabled={busy}>
-                <Icon name="upload" size={16} /> {busy ? 'Memproses…' : upload ? 'Ganti gambar' : 'Upload gambar'}
-              </button>
-              {upload && (
-                <button className="btn sm" onClick={() => st.setUpload(panel, null)}>
-                  Hapus
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {panel !== 'floor' && (
         <button
@@ -185,7 +144,6 @@ export function PanelsStep() {
             st.commit((d) => {
               for (const w of ['back', 'left', 'right'] as const) d.panels[w] = { ...spec };
             });
-            if (spec.bg === 'upload' && upload) for (const w of ['back', 'left', 'right'] as const) st.setUpload(w, upload);
             st.notify('Motif diterapkan ke semua dinding');
           }}
         >

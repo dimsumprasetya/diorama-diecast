@@ -156,8 +156,6 @@ export function sanitizeDesign(input: unknown): Design {
   };
 }
 
-/** Panel yang memakai gambar upload customer. */
-export const uploadPanels = (d: Design): PanelId[] => (Object.keys(d.panels) as PanelId[]).filter((k) => d.panels[k].bg === 'upload');
 
 // ---------------------------------------------------------------- Link berbagi (desain di URL)
 

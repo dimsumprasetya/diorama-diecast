@@ -71,7 +71,7 @@ export type BackgroundDef = {
   colorable?: boolean;
 };
 
-/** Pilihan print dinding. 'upload' = customer upload gambar sendiri, 'clear' = akrilik bening tanpa print. */
+/** Pilihan print dinding (semua desain disediakan toko). 'clear' = akrilik bening tanpa print. */
 export const WALL_BACKGROUNDS: BackgroundDef[] = [
   { id: 'brick-red', label: 'Bata Merah', price: 0 },
   { id: 'brick-white', label: 'Bata Putih', price: 0 },
@@ -82,7 +82,6 @@ export const WALL_BACKGROUNDS: BackgroundDef[] = [
   { id: 'wood-wall', label: 'Papan Kayu', price: 0 },
   { id: 'tile-wall', label: 'Keramik Putih', price: 0 },
   { id: 'shutters', label: 'Deretan Rolling Door', price: 0 },
-  { id: 'upload', label: 'Gambar Sendiri', price: 0 },
   { id: 'clear', label: 'Bening (tanpa print)', price: 0 },
 ];
 
@@ -96,7 +95,6 @@ export const FLOOR_BACKGROUNDS: BackgroundDef[] = [
   { id: 'wood', label: 'Lantai Kayu', price: 0 },
   { id: 'grass', label: 'Rumput', price: 0 },
   { id: 'dirt', label: 'Tanah', price: 0 },
-  { id: 'upload', label: 'Gambar Sendiri', price: 0 },
 ];
 
 export const PAINT_COLORS = ['#e8e4da', '#b9c4c9', '#d9c39a', '#9fb39a', '#c97b5a', '#5c6f7e', '#3b3d42', '#f1d36b', '#8a3b3b', '#2f4858'];

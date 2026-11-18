@@ -63,7 +63,7 @@ export function useThemePreview(id: string) {
   return useQueued(
     `theme|${id}`,
     async () => {
-      const u = await renderDioramaPhoto(designFromTheme(id), {}, { width: 480, height: 300 });
+      const u = await renderDioramaPhoto(designFromTheme(id), { width: 480, height: 300 });
       themeCache.set(id, u);
       return u;
     },

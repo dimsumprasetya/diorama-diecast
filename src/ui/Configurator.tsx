@@ -13,7 +13,7 @@ import { useCarThumb, useItemThumb } from './thumbs.ts';
 
 export const STEPS = [
   { label: 'Tema', title: 'Pilih Tema', hint: 'Mulai dari tema siap pakai. Semua bisa diubah setelahnya.' },
-  { label: 'Wall', title: 'Print Dinding & Lantai', hint: 'Pilih motif tiap panel, atau upload gambar/desain sendiri.' },
+  { label: 'Wall', title: 'Print Dinding & Lantai', hint: 'Pilih motif print untuk tiap dinding dan lantai.' },
   { label: 'Aset', title: 'Tempel Aset', hint: 'Klik aset untuk menambah, lalu geser langsung di preview 3D.' },
   { label: 'Ekstra', title: 'Lampu, Teks & Mobil Contoh', hint: 'Tambahan opsional, plus atur mobil contoh untuk preview.' },
   { label: 'Pesan', title: 'Cek & Pesan', hint: 'Periksa desain, isi data pengiriman, lalu bayar.' },
@@ -21,7 +21,6 @@ export const STEPS = [
 
 export function Configurator() {
   const design = useStore((s) => s.design);
-  const uploads = useStore((s) => s.uploads);
   const view = useStore((s) => s.view);
   const step = useStore((s) => s.step);
   const cameraCmd = useStore((s) => s.cameraCmd);
@@ -61,7 +60,7 @@ export function Configurator() {
         <StepFooter />
       </aside>
       <main className="viewport" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
-        <Stage design={design} uploads={uploads} view={view} interactive cameraCmd={cameraCmd} />
+        <Stage design={design} view={view} interactive cameraCmd={cameraCmd} />
         <div className="hud-hint">
           <span>Drag = putar</span>
           <span>Scroll/cubit = zoom</span>
@@ -85,7 +84,7 @@ function TopBar({ total }: { total: number }) {
     const url = `${location.origin}/#d=${encodeDesign(st.design)}`;
     try {
       await navigator.clipboard.writeText(url);
-      st.notify(Object.keys(st.uploads).length ? 'Link disalin (gambar upload tidak ikut di link)' : 'Link desain disalin — kirim ke teman!');
+      st.notify('Link desain disalin — kirim ke teman!');
     } catch {
       st.notify('Browser menolak menyalin link. Salin dari address bar setelah membuka ulang halaman.');
       history.replaceState(null, '', `#d=${encodeDesign(st.design)}`);

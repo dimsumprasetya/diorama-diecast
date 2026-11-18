@@ -5,10 +5,10 @@ import { existsSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SHIPPING_ZONES, byId } from '../shared/catalog.ts';
-import { sanitizeDesign, uploadPanels } from '../shared/design.ts';
+import { sanitizeDesign } from '../shared/design.ts';
 import { quoteDesign } from '../shared/pricing.ts';
 import {
-  ORDER_STATUSES, SNAPSHOT_DIR, UPLOAD_DIR, getOrder, insertOrder, listOrders, setStatus, updateOrder,
+  ORDER_STATUSES, SNAPSHOT_DIR, getOrder, insertOrder, listOrders, setStatus, updateOrder,
   type Customer, type Order, type OrderStatus,
 } from './db.ts';
 import {
@@ -76,8 +76,6 @@ function saveSnapshot(orderId: string, view: 'hero' | 'top', dataUrl: unknown) {
   if (buf) writeFileSync(path.join(SNAPSHOT_DIR, `${orderId}-${view}.jpg`), buf);
 }
 
-const PANEL_IDS = ['back', 'left', 'right', 'floor'] as const;
-const uploadFile = (orderId: string, panel: string) => path.join(UPLOAD_DIR, `${orderId}-${panel}.jpg`);
 
 const keyEquals = (a: string, b: string) => {
   const x = Buffer.from(a);
@@ -139,7 +137,6 @@ function publicOrder(o: Order) {
     paidAt: o.paidAt,
     trackingNumber: o.trackingNumber,
     history: o.history,
-    uploadPanels: PANEL_IDS.filter((p) => existsSync(uploadFile(o.id, p))),
   };
 }
 
@@ -186,20 +183,13 @@ export function createApp() {
 
   api.post('/orders', rateLimit(15, 60 * 60 * 1000), async (req, res, next) => {
     try {
-      const { design: rawDesign, customer: rawCustomer, shippingZone, snapshots, approved, paymentMethod, uploads } = req.body ?? {};
+      const { design: rawDesign, customer: rawCustomer, shippingZone, snapshots, approved, paymentMethod } = req.body ?? {};
       if (approved !== true) throw new HttpError(400, 'Desain harus disetujui terlebih dahulu');
       const zone = byId(SHIPPING_ZONES, shippingZone);
       if (!zone) throw new HttpError(400, 'Pilih tujuan pengiriman');
       let design;
       try { design = sanitizeDesign(rawDesign); } catch (e) { throw new HttpError(400, (e as Error).message); }
       const customer = sanitizeCustomer(rawCustomer, zone.id);
-      // gambar upload customer (wajib ada untuk panel "Gambar Sendiri")
-      const uploadBufs: Record<string, Buffer> = {};
-      for (const p of uploadPanels(design)) {
-        const buf = decodeImage(uploads?.[p], 6_000_000);
-        if (!buf) throw new HttpError(400, 'Gambar upload untuk panel tidak ditemukan / terlalu besar (maks 6 MB)');
-        uploadBufs[p] = buf;
-      }
       const quote = quoteDesign(design, zone.id);
       const now = new Date().toISOString();
       const order: Order = {
@@ -223,7 +213,6 @@ export function createApp() {
         history: [{ at: now, status: 'awaiting_payment', note: 'Desain disetujui customer' }],
       };
       insertOrder(order);
-      for (const [p, buf] of Object.entries(uploadBufs)) writeFileSync(uploadFile(order.id, p), buf);
       saveSnapshot(order.id, 'hero', snapshots?.hero);
       saveSnapshot(order.id, 'top', snapshots?.top);
 
@@ -252,19 +241,6 @@ export function createApp() {
       const allowed = order && (verifyAdminToken(req.query.t) || keyEquals(order.accessKey, String(req.query.k ?? '')));
       if (!allowed) throw new HttpError(404, 'Tidak ditemukan');
       const file = path.join(SNAPSHOT_DIR, `${order!.id}-${view}.jpg`);
-      if (!existsSync(file)) throw new HttpError(404, 'Tidak ada gambar');
-      res.setHeader('Cache-Control', 'private, max-age=86400');
-      res.sendFile(file);
-    } catch (e) { next(e); }
-  });
-
-  api.get('/orders/:id/upload/:panel', (req, res, next) => {
-    try {
-      const panel = PANEL_IDS.find((p) => p === req.params.panel);
-      const order = getOrder(String(req.params.id));
-      const allowed = order && (verifyAdminToken(req.query.t) || keyEquals(order.accessKey, String(req.query.k ?? '')));
-      if (!allowed || !panel) throw new HttpError(404, 'Tidak ditemukan');
-      const file = uploadFile(order!.id, panel);
       if (!existsSync(file)) throw new HttpError(404, 'Tidak ada gambar');
       res.setHeader('Cache-Control', 'private, max-age=86400');
       res.sendFile(file);

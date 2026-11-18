@@ -49,9 +49,7 @@ export type Order = {
 
 export const DATA_DIR = path.resolve(process.env.DATA_DIR || './data');
 export const SNAPSHOT_DIR = path.join(DATA_DIR, 'snapshots');
-export const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 mkdirSync(SNAPSHOT_DIR, { recursive: true });
-mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const db = new DatabaseSync(path.join(DATA_DIR, 'orders.db'));
 db.exec(`

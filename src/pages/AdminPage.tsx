@@ -3,7 +3,6 @@ import { BOX_SIZES, FLOOR_BACKGROUNDS, ITEMS, PANELS, SHOP, WALL_BACKGROUNDS, by
 import { formatRupiah } from '../../shared/pricing.ts';
 import { api, ApiError, STATUS_LABEL, waLink } from '../lib/api.ts';
 import { downloadDataUrl } from '../lib/image.ts';
-import type { Uploads } from '../three/diorama.ts';
 import { renderPanelPrint, type PrintFile } from '../three/offscreen.ts';
 import { Icon } from '../ui/Icon.tsx';
 import { OrderViewer, StatusTimeline, formatDate, type PublicOrder } from './OrderPage.tsx';
@@ -179,12 +178,6 @@ function OrderDetail({ id, token, onBack, onAuthError }: { id: string; token: st
   }, [id, token, onAuthError]);
   useEffect(load, [load]);
 
-  const uploads = useMemo<Uploads>(() => {
-    const u: Uploads = {};
-    for (const p of order?.uploadPanels ?? []) u[p as PanelId] = `/api/orders/${id}/upload/${p}?t=${encodeURIComponent(token)}`;
-    return u;
-  }, [order?.uploadPanels, id, token]);
-
   if (!order) return <p className="muted pad">Memuat…</p>;
   const d = order.design;
 
@@ -206,7 +199,7 @@ function OrderDetail({ id, token, onBack, onAuthError }: { id: string; token: st
     try {
       const out: PrintFile[] = [];
       for (const p of PANELS) {
-        const f = await renderPanelPrint(d, uploads, p.id);
+        const f = await renderPanelPrint(d, p.id);
         if (f) out.push(f);
       }
       setPrints(out);
@@ -299,12 +292,6 @@ function OrderDetail({ id, token, onBack, onAuthError }: { id: string; token: st
               <li key={p.id}>
                 {p.label}: <b>{bgLabel(p.id)}</b>
                 {d.panels[p.id].color && <span className="dot" style={{ background: d.panels[p.id].color }} />}
-                {d.panels[p.id].bg === 'upload' && order.uploadPanels.includes(p.id) && (
-                  <a href={uploads[p.id]} download={`${order.id}-${p.id}-asli.jpg`}>
-                    {' '}
-                    (gambar asli)
-                  </a>
-                )}
               </li>
             ))}
             <li>Weathering: {d.grime}</li>
@@ -383,7 +370,7 @@ function OrderDetail({ id, token, onBack, onAuthError }: { id: string; token: st
         </section>
       </div>
       <div className="admin-view">
-        <OrderViewer design={d} uploads={uploads} />
+        <OrderViewer design={d} />
         <div className="snapshots">
           <img src={`/api/orders/${id}/snapshot/hero?t=${encodeURIComponent(token)}`} alt="Foto desain" />
           <img src={`/api/orders/${id}/snapshot/top?t=${encodeURIComponent(token)}`} alt="Tampak depan" />

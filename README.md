@@ -2,14 +2,14 @@
 
 Web app untuk toko diorama box 1:64. Customer merancang diorama sendiri seperti di game, menyetujui desainnya, membayar, lalu Anda memproduksinya.
 
-**Alur customer:** Pilih tema → atur print dinding & lantai (atau upload gambar sendiri) → tempel aset → tambahan (LED, tulisan di base) → setujui desain → bayar.
+**Alur customer:** Pilih tema → pilih print dinding & lantai → tempel aset → tambahan (LED, tulisan di base) → setujui desain → bayar. Semua desain print dan aset disediakan toko.
 
 ## Fitur
 
 **Untuk customer**
 - Preview 3D yang bisa diputar, di-zoom, dan dilihat dari depan atau atas. Dinding yang menghalangi kamera otomatis disembunyikan, jadi isi box selalu terlihat.
-- Lima tema siap pakai: Midnight Alley, Garasi Rumah, Bengkel Racing, Kanvas Kosong, dan Desain Sendiri.
-- Print tiap panel (belakang, kiri, kanan, lantai) bisa dipilih: bata, beton, seng, kayu, rolling door, aspal basah, keramik, dll., atau **upload gambar sendiri**.
+- Empat tema siap pakai: Midnight Alley, Garasi Rumah, Bengkel Racing, dan Kanvas Kosong.
+- Print tiap panel (belakang, kiri, kanan, lantai) bisa dipilih dari motif yang disediakan: bata, beton, seng, kayu, rolling door, aspal basah, keramik, dll.
 - Aset bisa ditambah dengan klik atau di-drag ke preview, lalu digeser langsung di 3D. Aset dinding bisa dipindah ke dinding lain.
   - Neon sign, papan nama toko, dan grafiti **dengan teks custom** (termasuk huruf Jepang).
   - Elemen dinding: rolling door, AC, lampu + sorot cahaya, pipa, kabel, poster, dll.
@@ -24,7 +24,7 @@ Web app untuk toko diorama box 1:64. Customer merancang diorama sendiri seperti 
 **Untuk Anda (admin, `/admin`)**
 - Daftar pesanan dengan filter status. Status bisa diubah (dibayar → diproduksi → dikirim → selesai), plus kolom no. resi dan catatan internal.
 - Lembar produksi berisi motif tiap panel, daftar miniatur 3D, LED, dan tulisan base.
-- **File cetak siap print 300 DPI** (dengan bleed 2 mm) untuk tiap dinding dan lantai, lengkap dengan stikernya. Ada juga unduhan gambar asli yang di-upload customer.
+- **File cetak siap print 300 DPI** (dengan bleed 2 mm) untuk tiap dinding dan lantai, lengkap dengan stikernya.
 - Foto desain yang disetujui customer, dan tombol WhatsApp ke customer.
 
 ## Menjalankan di komputer
@@ -93,7 +93,7 @@ Pilihan hosting:
 - **VPS** (mis. IDCloudHost, Biznet Gio, DigitalOcean). Jalankan dengan `pm2 start npm --name diorama -- start`, lalu pasang Nginx + SSL (Let's Encrypt) di depannya.
 - **Railway / Render**: wajib pasang **persistent volume/disk** dan arahkan `DATA_DIR` ke sana. Tanpa itu, pesanan hilang setiap kali server restart.
 
-Semua data (database pesanan, foto desain, gambar upload customer) tersimpan di folder `data/`. **Backup folder ini secara rutin.**
+Semua data (database pesanan dan foto desain) tersimpan di folder `data/`. **Backup folder ini secara rutin.**
 
 ## Alur kerja harian
 

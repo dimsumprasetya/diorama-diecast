@@ -27,7 +27,6 @@ const post = (p: string, body: unknown, headers: Record<string, string> = {}) =>
   fetch(base + p, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
 
 const customer = { name: 'Budi', phone: '0812-3456-7890', address: 'Jl. Mawar No. 12 Kebayoran', city: 'Jakarta', postalCode: '12160' };
-const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
 test('pesanan ditolak tanpa persetujuan desain', async () => {
   const r = await post('/orders', { design: designFromTheme('midnight-alley'), customer, shippingZone: 'jawa' });
@@ -64,18 +63,18 @@ test('halaman pesanan butuh access key yang benar', async () => {
   assert.equal(j.order.adminNote, undefined);
 });
 
-test('panel "Gambar Sendiri" wajib ada gambarnya, lalu bisa diunduh', async () => {
-  const design = designFromTheme('own-design');
-  const bad = await post('/orders', { design, customer, shippingZone: 'pickup', approved: true });
-  assert.equal(bad.status, 400);
-  const ok = await post('/orders', { design, customer, shippingZone: 'pickup', approved: true, paymentMethod: 'tokopedia', uploads: { back: PNG, left: PNG, right: PNG } });
-  assert.equal(ok.status, 201);
-  const j = (await ok.json()) as any;
+test('print "upload sendiri" tidak bisa dipesan', async () => {
+  const design = designFromTheme('blank') as any;
+  design.panels.back = { bg: 'upload' };
+  const r = await post('/orders', { design, customer, shippingZone: 'pickup', approved: true });
+  assert.equal(r.status, 400);
+});
+
+test('checkout via Tokopedia tercatat sebagai metode bayar', async () => {
+  const r = await post('/orders', { design: designFromTheme('home-garage'), customer, shippingZone: 'pickup', approved: true, paymentMethod: 'tokopedia' });
+  assert.equal(r.status, 201);
+  const j = (await r.json()) as any;
   assert.equal(j.order.paymentMethod, 'tokopedia');
-  assert.deepEqual(j.order.uploadPanels.sort(), ['back', 'left', 'right']);
-  const img = await fetch(`${base}/orders/${j.order.id}/upload/back?k=${j.accessKey}`);
-  assert.equal(img.status, 200);
-  assert.equal((await fetch(`${base}/orders/${j.order.id}/upload/back?k=x`)).status, 404);
 });
 
 test('admin: login, daftar pesanan, ubah status & resi', async () => {

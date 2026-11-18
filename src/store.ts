@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { ITEMS, SHOP, byId, type PanelId } from '../shared/catalog.ts';
+import { ITEMS, SHOP, byId } from '../shared/catalog.ts';
 import { decodeDesign, defaultDesign, designFromTheme, sanitizeDesign, uid, type Design, type PlacedItem, type PreviewCar } from '../shared/design.ts';
 import { clampCar, clampItem } from './lib/placement.ts';
-import { dims, type Uploads } from './three/diorama.ts';
+import { dims } from './three/diorama.ts';
 
 export type CameraView = 'reset' | 'front' | 'top' | 'left' | 'right' | 'back';
 
@@ -10,7 +10,6 @@ export type ViewState = { showCars: boolean; showCase: boolean; night: boolean; 
 
 type State = {
   design: Design;
-  uploads: Uploads;
   past: Design[];
   future: Design[];
   step: number;
@@ -38,7 +37,6 @@ type State = {
   updateCar(uid: string, patch: Partial<PreviewCar>): void;
   addCar(): void;
   removeCar(uid: string): void;
-  setUpload(panel: PanelId, dataUrl: string | null): void;
   loadTheme(id: string): void;
   setView(patch: Partial<ViewState>): void;
   camera(view: CameraView): void;
@@ -46,7 +44,6 @@ type State = {
 };
 
 const LS_DESIGN = 'hss.design.v2';
-const LS_UPLOADS = 'hss.uploads.v2';
 
 function initialDesign(): Design {
   const hash = new URLSearchParams(location.hash.slice(1)).get('d');
@@ -63,19 +60,10 @@ function initialDesign(): Design {
   return defaultDesign();
 }
 
-function initialUploads(): Uploads {
-  try {
-    return JSON.parse(localStorage.getItem(LS_UPLOADS) ?? '{}');
-  } catch {
-    return {};
-  }
-}
-
 const clone = (d: Design): Design => structuredClone(d);
 
 export const useStore = create<State>((set, get) => ({
   design: initialDesign(),
-  uploads: initialUploads(),
   past: [],
   future: [],
   step: 0,
@@ -198,13 +186,6 @@ export const useStore = create<State>((set, get) => ({
     set({ selected: null });
   },
 
-  setUpload(panel, dataUrl) {
-    const uploads = { ...get().uploads };
-    if (dataUrl) uploads[panel] = dataUrl;
-    else delete uploads[panel];
-    set({ uploads });
-  },
-
   loadTheme(id) {
     const cars = get().design.cars;
     const next = designFromTheme(id);
@@ -219,25 +200,14 @@ export const useStore = create<State>((set, get) => ({
 
 // Simpan otomatis ke browser
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
-let uploadsDirty = false;
 useStore.subscribe((s, prev) => {
-  if (s.design === prev.design && s.uploads === prev.uploads) return;
-  if (s.uploads !== prev.uploads) uploadsDirty = true;
+  if (s.design === prev.design) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    const cur = useStore.getState();
     try {
-      localStorage.setItem(LS_DESIGN, JSON.stringify(cur.design));
+      localStorage.setItem(LS_DESIGN, JSON.stringify(useStore.getState().design));
     } catch {
-      /* penyimpanan penuh */
-    }
-    if (uploadsDirty) {
-      uploadsDirty = false;
-      try {
-        localStorage.setItem(LS_UPLOADS, JSON.stringify(cur.uploads));
-      } catch {
-        /* gambar terlalu besar untuk localStorage — tetap jalan tanpa disimpan */
-      }
+      /* penyimpanan penuh / diblokir */
     }
   }, 400);
 });

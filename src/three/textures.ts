@@ -436,22 +436,6 @@ const builders: Record<string, () => TexSet> = {
     ctx.putImageData(img, 0, 0);
     return { map: tex(c), bump: tex(c, false), realSize: 2.4 };
   },
-  placeholder() {
-    const { c, ctx } = canvas();
-    ctx.fillStyle = '#20232a';
-    ctx.fillRect(0, 0, S, S);
-    ctx.strokeStyle = '#ff7a1a';
-    ctx.setLineDash([18, 12]);
-    ctx.lineWidth = 8;
-    ctx.strokeRect(20, 20, S - 40, S - 40);
-    ctx.fillStyle = '#ff7a1a';
-    ctx.font = '700 64px "Chakra Petch", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('⬆', S / 2, S / 2 - 10);
-    ctx.font = '700 40px "Chakra Petch", sans-serif';
-    ctx.fillText('UPLOAD GAMBAR', S / 2, S / 2 + 60);
-    return { map: tex(c), realSize: 1 };
-  },
 
   // --- lain-lain
   grime() {

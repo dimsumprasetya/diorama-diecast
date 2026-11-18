@@ -9,20 +9,19 @@ import type { Design, PlacedItem, PreviewCar, WallSide } from '../../shared/desi
 import { clampCar, clampItem, hitSurface } from '../lib/placement.ts';
 import { useStore, type CameraView, type ViewState } from '../store.ts';
 import { buildCar } from '../three/builders.ts';
-import { buildPlaced, buildShell, dims, placeObject, wallFrame, type Dims, type Uploads } from '../three/diorama.ts';
+import { buildPlaced, buildShell, dims, placeObject, wallFrame, type Dims } from '../three/diorama.ts';
 
 /** Dipakai drag & drop dari inventori HTML ke kanvas 3D. */
 export const stageRay: { current: ((clientX: number, clientY: number) => THREE.Ray | null) | null } = { current: null };
 
 type Props = {
   design: Design;
-  uploads: Uploads;
   view: ViewState;
   interactive?: boolean;
   cameraCmd?: { view: CameraView; n: number };
 };
 
-export function Stage({ design, uploads, view, interactive = false, cameraCmd }: Props) {
+export function Stage({ design, view, interactive = false, cameraCmd }: Props) {
   const down = useRef<[number, number]>([0, 0]);
   return (
     <div className="stage" onPointerDown={(e) => (down.current = [e.clientX, e.clientY])}>
@@ -36,17 +35,17 @@ export function Stage({ design, uploads, view, interactive = false, cameraCmd }:
           if (interactive && moved < 5) useStore.getState().select(null);
         }}
       >
-        <Content design={design} uploads={uploads} view={view} interactive={interactive} cameraCmd={cameraCmd ?? { view: 'reset', n: 0 }} />
+        <Content design={design} view={view} interactive={interactive} cameraCmd={cameraCmd ?? { view: 'reset', n: 0 }} />
       </Canvas>
     </div>
   );
 }
 
-function Content({ design, uploads, view, interactive, cameraCmd }: Required<Props>) {
+function Content({ design, view, interactive, cameraCmd }: Required<Props>) {
   const D = useMemo(() => dims(design), [design.size]);
   const shellKey = JSON.stringify([design.size, design.panels, design.grime, design.options]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const shell = useMemo(() => buildShell(design, uploads), [shellKey, uploads]);
+  const shell = useMemo(() => buildShell(design), [shellKey]);
   useEffect(() => {
     shell.caseGroup.visible = view.showCase;
   }, [shell, view.showCase]);

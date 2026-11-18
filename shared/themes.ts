@@ -101,15 +101,4 @@ export const THEMES: ThemeDef[] = [
       items: [],
     },
   },
-  {
-    id: 'own-design',
-    name: 'Desain Sendiri',
-    desc: 'Upload gambar/foto sendiri untuk dinding',
-    design: {
-      panels: { back: { bg: 'upload' }, left: { bg: 'upload' }, right: { bg: 'upload' }, floor: { bg: 'concrete' } },
-      grime: 'none',
-      options: { led: false, baseText: '' },
-      items: [],
-    },
-  },
 ];

@@ -4,7 +4,7 @@ import { ITEMS, byId, cmToReal, type PanelId } from '../../shared/catalog.ts';
 import type { Design } from '../../shared/design.ts';
 import { buildCar, buildItem } from './builders.ts';
 import { buildDecal, decalMaterial } from './decals.ts';
-import { LAYER, buildStatic, dims, panelMaterial, waitForUploads, wallFrame, type Uploads } from './diorama.ts';
+import { LAYER, buildStatic, dims, panelMaterial, wallFrame } from './diorama.ts';
 import { texturesFor } from './textures.ts';
 
 /**
@@ -107,12 +107,11 @@ function renderObject(obj: THREE.Object3D, w: number, h: number, dir: THREE.Vect
 // ---------------------------------------------------------------- foto diorama
 
 /** Foto diorama dari depan-samping (untuk preview tema & lampiran pesanan). */
-export async function renderDioramaPhoto(design: Design, uploads: Uploads, opts: { width: number; height: number; cars?: boolean; view?: 'hero' | 'front' } = { width: 1200, height: 800 }): Promise<string> {
+export async function renderDioramaPhoto(design: Design, opts: { width: number; height: number; cars?: boolean; view?: 'hero' | 'front' } = { width: 1200, height: 800 }): Promise<string> {
   const r = getRenderer();
   const scene = litScene();
-  const obj = buildStatic(design, uploads, { cars: opts.cars ?? true, showCase: true });
+  const obj = buildStatic(design, { cars: opts.cars ?? true, showCase: true });
   scene.add(obj);
-  await waitForUploads();
   const D = dims(design);
   r.setSize(opts.width, opts.height, false);
   r.toneMapping = THREE.ACESFilmicToneMapping;
@@ -154,18 +153,17 @@ export type PrintFile = { panel: PanelId; dataUrl: string; widthPx: number; heig
  * Render satu panel (dinding/lantai) jadi gambar siap cetak, termasuk stiker di panel tsb.
  * `bleedCm` = kelebihan gambar di tiap sisi untuk toleransi potong.
  */
-export async function renderPanelPrint(design: Design, uploads: Uploads, panel: PanelId, dpi = 300, bleedCm = 0.2): Promise<PrintFile | null> {
+export async function renderPanelPrint(design: Design, panel: PanelId, dpi = 300, bleedCm = 0.2): Promise<PrintFile | null> {
   const D = dims(design);
   const isFloor = panel === 'floor';
   const W = isFloor ? D.w : wallFrame(panel, D).length;
   const H = isFloor ? D.d : D.h;
   const b = cmToReal(bleedCm);
-  const bgMat = panelMaterial(panel, design.panels[panel], W + b * 2, H + b * 2, uploads[panel]);
+  const bgMat = panelMaterial(panel, design.panels[panel], W + b * 2, H + b * 2);
   const panelDecals = design.items
     .map((it, i) => ({ it, i }))
     .filter(({ it }) => byId(ITEMS, it.id)?.kind === 'decal' && (isFloor ? it.mount === 'floor' : it.mount === 'wall' && it.wall === panel));
   if (!bgMat && panelDecals.length === 0) return null;
-  await waitForUploads();
 
   const scene = new THREE.Scene();
   const root = new THREE.Group();

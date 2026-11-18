@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { SHOP } from '../../shared/catalog.ts';
 import type { Design } from '../../shared/design.ts';
 import { formatRupiah, type Quote } from '../../shared/pricing.ts';
 import { api, STATUS_LABEL, waLink } from '../lib/api.ts';
 import { Stage } from '../scene/Stage.tsx';
 import type { CameraView, ViewState } from '../store.ts';
-import type { Uploads } from '../three/diorama.ts';
 import { Icon } from '../ui/Icon.tsx';
 
 export type PublicOrder = {
@@ -22,7 +21,6 @@ export type PublicOrder = {
   paidAt: string | null;
   trackingNumber: string;
   history: { at: string; status: string; note?: string }[];
-  uploadPanels: string[];
 };
 
 const FLOW = ['awaiting_payment', 'paid', 'in_production', 'shipped', 'completed'];
@@ -32,13 +30,13 @@ export function formatDate(iso: string) {
 }
 
 /** Viewer 3D read-only (dipakai halaman pesanan & admin). */
-export function OrderViewer({ design, uploads }: { design: Design; uploads: Uploads }) {
+export function OrderViewer({ design }: { design: Design }) {
   const [view, setView] = useState<ViewState>({ showCars: true, showCase: true, night: false, autoRotate: true });
   const [cmd, setCmd] = useState<{ view: CameraView; n: number }>({ view: 'reset', n: 0 });
   const cam = (v: CameraView) => setCmd((c) => ({ view: v, n: c.n + 1 }));
   return (
     <div className="viewer">
-      <Stage design={design} uploads={uploads} view={view} cameraCmd={cmd} />
+      <Stage design={design} view={view} cameraCmd={cmd} />
       <div className="viewbar">
         <button className={`vb ${view.showCars ? 'on' : ''}`} onClick={() => setView({ ...view, showCars: !view.showCars })}>
           <Icon name="car" /> <span>Mobil {view.showCars ? 'ON' : 'OFF'}</span>
@@ -202,12 +200,6 @@ export default function OrderPage({ id, accessKey }: { id: string; accessKey: st
     return () => clearInterval(t);
   }, [order?.status, order?.paymentMethod, load]);
 
-  const uploads = useMemo<Uploads>(() => {
-    const u: Uploads = {};
-    for (const p of order?.uploadPanels ?? []) u[p as keyof Uploads] = `/api/orders/${id}/upload/${p}?k=${accessKey}`;
-    return u;
-  }, [order?.uploadPanels, id, accessKey]);
-
   if (error)
     return (
       <div className="page center">
@@ -273,7 +265,7 @@ export default function OrderPage({ id, accessKey }: { id: string; accessKey: st
             <Icon name="chat" /> Tanya admin via WhatsApp
           </a>
         </div>
-        <OrderViewer design={order.design} uploads={uploads} />
+        <OrderViewer design={order.design} />
       </div>
     </div>
   );
