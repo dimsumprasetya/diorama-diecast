@@ -13,7 +13,7 @@ import { useCarThumb, useItemThumb } from './thumbs.ts';
 
 export const STEPS = [
   { label: 'Tema', title: 'Pilih Tema', hint: 'Mulai dari tema siap pakai. Semua bisa diubah setelahnya.' },
-  { label: 'Print', title: 'Print Dinding & Lantai', hint: 'Pilih motif tiap panel, atau upload gambar/desain sendiri.' },
+  { label: 'Wall', title: 'Print Dinding & Lantai', hint: 'Pilih motif tiap panel, atau upload gambar/desain sendiri.' },
   { label: 'Aset', title: 'Tempel Aset', hint: 'Klik aset untuk menambah, lalu geser langsung di preview 3D.' },
   { label: 'Ekstra', title: 'Lampu, Teks & Mobil Contoh', hint: 'Tambahan opsional, plus atur mobil contoh untuk preview.' },
   { label: 'Pesan', title: 'Cek & Pesan', hint: 'Periksa desain, isi data pengiriman, lalu bayar.' },
