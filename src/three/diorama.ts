@@ -140,7 +140,7 @@ export function buildShell(design: Design): Shell {
     const planeH = D.baseThick * 0.7;
     const texH = 96;
     const texW = Math.min(4096, Math.round((texH * planeW) / planeH));
-    const tex = textTexture(design.options.baseText.trim(), { color: '#f2f2ee', width: texW, height: texH, font: '"Chakra Petch", sans-serif' });
+    const tex = textTexture(design.options.baseText.trim(), { color: '#f2f2ee', width: texW, height: texH, font: 'Montserrat, "Arial Black", sans-serif' });
     const plate = new THREE.Mesh(new THREE.PlaneGeometry(planeW, planeH), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
     plate.position.set(0, -D.baseThick / 2, cz + bd / 2 + 0.002);
     g.add(plate);

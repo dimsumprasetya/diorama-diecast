@@ -6,6 +6,7 @@ import { api, STATUS_LABEL, waLink } from '../lib/api.ts';
 import { Stage } from '../scene/Stage.tsx';
 import type { CameraView, ViewState } from '../store.ts';
 import { Icon } from '../ui/Icon.tsx';
+import { LogoBadge, LogoMark } from '../ui/Logo.tsx';
 
 export type PublicOrder = {
   id: string;
@@ -212,13 +213,15 @@ export default function OrderPage({ id, accessKey }: { id: string; accessKey: st
         </div>
       </div>
     );
-  if (!order) return <div className="boot"><div className="boot-logo">H</div></div>;
+  if (!order) return <div className="boot"><div className="boot-logo"><LogoBadge size={96} /></div></div>;
 
   return (
     <div className="page">
       <header className="topbar simple">
         <a className="brand" href="/">
-          <span className="brand-mark">H</span>
+          <span className="brand-badge">
+            <LogoMark size={20} />
+          </span>
           <span className="brand-text">
             <b>{SHOP.name.toUpperCase()}</b>
             <small>Status Pesanan</small>

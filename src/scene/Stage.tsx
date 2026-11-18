@@ -83,7 +83,7 @@ function Content({ design, view, interactive, cameraCmd }: Required<Props>) {
       {view.showCars && design.cars.map((c) => <Car key={c.uid} car={c} D={D} interactive={interactive} />)}
       <mesh rotation-x={-Math.PI / 2} position-y={-D.baseThick - 0.003} receiveShadow>
         <circleGeometry args={[60, 48]} />
-        <meshStandardMaterial color={view.night ? '#0b0c10' : '#1e2128'} roughness={0.6} metalness={0.1} />
+        <meshStandardMaterial color={view.night ? '#0a0a0a' : '#1f1d1d'} roughness={0.6} metalness={0.1} />
       </mesh>
       <CameraRig D={D} cmd={cameraCmd} autoRotate={view.autoRotate} />
       {interactive && <RayBridge />}
@@ -104,7 +104,7 @@ function Environment({ night }: { night: boolean }) {
   }, [gl, scene]);
   useEffect(() => {
     scene.environmentIntensity = night ? 0.06 : 0.55;
-    scene.background = new THREE.Color(night ? '#06070a' : '#16181d');
+    scene.background = new THREE.Color(night ? '#060606' : '#151414');
   }, [night, scene]);
   return null;
 }
@@ -167,7 +167,7 @@ function SelectBox({ box }: { box: THREE.Box3 }) {
   const center = useMemo(() => box.getCenter(new THREE.Vector3()), [box]);
   return (
     <lineSegments geometry={geo} position={center} renderOrder={20} raycast={() => null}>
-      <lineBasicMaterial color="#ff7a1a" depthTest={false} transparent />
+      <lineBasicMaterial color="#e32636" depthTest={false} transparent />
     </lineSegments>
   );
 }

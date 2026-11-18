@@ -8,6 +8,7 @@ import { useStore } from '../store.ts';
 import { IS_EMBED, IS_PREVIEW } from '../preview.ts';
 import { Checkout } from './Checkout.tsx';
 import { Icon } from './Icon.tsx';
+import { LogoMark } from './Logo.tsx';
 import { AssetsStep, ExtrasStep, PanelsStep, ThemeStep } from './steps.tsx';
 import { useCarThumb, useItemThumb } from './thumbs.ts';
 
@@ -93,10 +94,12 @@ function TopBar({ total }: { total: number }) {
   return (
     <header className="topbar">
       <a className="brand" href="./" aria-label={SHOP.name}>
-        <span className="brand-mark">H</span>
+        <span className="brand-badge">
+          <LogoMark size={20} />
+        </span>
         <span className="brand-text">
           <b>{SHOP.name.toUpperCase()}</b>
-          <small>Diorama Builder 1:64</small>
+          <small>PRECISION &amp; CRAFTSMANSHIP</small>
         </span>
       </a>
       <div className="topbar-actions">

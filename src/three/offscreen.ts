@@ -116,7 +116,7 @@ export async function renderDioramaPhoto(design: Design, opts: { width: number; 
   r.setSize(opts.width, opts.height, false);
   r.toneMapping = THREE.ACESFilmicToneMapping;
   r.toneMappingExposure = 1.0;
-  r.setClearColor('#16181d', 1);
+  r.setClearColor('#151414', 1);
   const cam = new THREE.PerspectiveCamera(30, opts.width / opts.height, 0.05, 200);
   const target = new THREE.Vector3(0, D.h * 0.42, 0);
   const span = Math.max(D.w, D.h * (opts.width / opts.height)) * 1.18;

@@ -166,14 +166,14 @@ export function PanelsStep() {
 }
 
 function PanelIcon({ id }: { id: PanelId }) {
-  const hl = '#ff7a1a';
+  const hl = '#e32636';
   const base = 'currentColor';
   return (
     <svg width="30" height="22" viewBox="0 0 30 22" fill="none" strokeWidth="1.6" aria-hidden="true">
-      <path d="M4 18 L9 13 L25 13 L26 18 Z" stroke={id === 'floor' ? hl : base} fill={id === 'floor' ? 'rgba(255,122,26,.25)' : 'none'} />
-      <path d="M9 13 L9 3 L25 3 L25 13" stroke={id === 'back' ? hl : base} fill={id === 'back' ? 'rgba(255,122,26,.25)' : 'none'} />
-      <path d="M4 18 L4 8 L9 3 L9 13 Z" stroke={id === 'left' ? hl : base} fill={id === 'left' ? 'rgba(255,122,26,.25)' : 'none'} />
-      <path d="M25 3 L26 8 L26 18 L25 13" stroke={id === 'right' ? hl : base} fill={id === 'right' ? 'rgba(255,122,26,.25)' : 'none'} />
+      <path d="M4 18 L9 13 L25 13 L26 18 Z" stroke={id === 'floor' ? hl : base} fill={id === 'floor' ? 'rgba(227,38,54,.25)' : 'none'} />
+      <path d="M9 13 L9 3 L25 3 L25 13" stroke={id === 'back' ? hl : base} fill={id === 'back' ? 'rgba(227,38,54,.25)' : 'none'} />
+      <path d="M4 18 L4 8 L9 3 L9 13 Z" stroke={id === 'left' ? hl : base} fill={id === 'left' ? 'rgba(227,38,54,.25)' : 'none'} />
+      <path d="M25 3 L26 8 L26 18 L25 13" stroke={id === 'right' ? hl : base} fill={id === 'right' ? 'rgba(227,38,54,.25)' : 'none'} />
     </svg>
   );
 }

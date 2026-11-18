@@ -5,6 +5,7 @@ import { api, ApiError, STATUS_LABEL, waLink } from '../lib/api.ts';
 import { downloadDataUrl } from '../lib/image.ts';
 import { renderPanelPrint, type PrintFile } from '../three/offscreen.ts';
 import { Icon } from '../ui/Icon.tsx';
+import { LogoBadge, LogoMark } from '../ui/Logo.tsx';
 import { OrderViewer, StatusTimeline, formatDate, type PublicOrder } from './OrderPage.tsx';
 
 type AdminOrder = PublicOrder & { adminNote: string; paymentInfo: Record<string, unknown> | null; updatedAt: string; paymentAttempt: number };
@@ -25,7 +26,9 @@ export default function AdminPage() {
     <div className="page admin">
       <header className="topbar simple">
         <a className="brand" href="/admin" onClick={(e) => (e.preventDefault(), setSelected(null))}>
-          <span className="brand-mark">H</span>
+          <span className="brand-badge">
+            <LogoMark size={20} />
+          </span>
           <span className="brand-text">
             <b>{SHOP.name.toUpperCase()}</b>
             <small>Admin Pesanan</small>
@@ -63,7 +66,7 @@ function Login({ onToken }: { onToken: (t: string) => void }) {
           }
         }}
       >
-        <div className="brand-mark big">H</div>
+        <LogoBadge size={120} />
         <h2>Admin {SHOP.name}</h2>
         <label className="form">
           Password

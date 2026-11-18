@@ -7,6 +7,8 @@ async function loadFonts() {
   if (!document.fonts) return;
   const fonts = [
     document.fonts.load('700 40px "Chakra Petch"'),
+    document.fonts.load('800 40px Montserrat'),
+    document.fonts.load('900 40px Montserrat'),
     document.fonts.load('400 40px "Permanent Marker"'),
     document.fonts.load('400 40px Bungee'),
     document.fonts.load('900 40px "Noto Sans JP"', 'ラーメン居酒屋時間寿司走り屋止まれ'),
